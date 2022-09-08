@@ -8,7 +8,7 @@ exports.registerUser = async (req, res, next) => {
         const token = result.getsignedJwtToken()
         res.status(200).json({ success: true, token })
     } catch (error) {
-        res.status(400).json({ success: false, error: error })
+        res.status(400).json({ success: false, error: 'Email is already existing' })
     }
 }
 exports.loginUser = async (req, res, next) => {

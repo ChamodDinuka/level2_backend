@@ -1,5 +1,7 @@
 const express = require('express')
 const router = express.Router();
+const {getType} =require('../controllers/typeController')
+const {getPie} = require('../controllers/pieController')
 const {getClients,addClient,updateClient,deleteClient} = require('../controllers/clients')
 const {getReservation,addReservation,updateReservation,deleteReservation} = require('../controllers/reservationController')
 
@@ -10,6 +12,12 @@ router.route('/clients').get(getClients).post(addClient)
 //reservation routes
 router.route('/reservations/:id').put(updateReservation).delete(deleteReservation)
 router.route('/reservations').get(getReservation).post(addReservation)
+
+//get types
+router.route('/types').get(getType)
+
+//get data for pie and bar chart
+router.route('/pie').get(getPie)
 
 // router.get('/clients/:id',(req,res)=>{
 //     res.status(200).json({status:"success"})
