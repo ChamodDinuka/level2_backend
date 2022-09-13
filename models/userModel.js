@@ -6,9 +6,10 @@ const userSchema = new mongoose.Schema({
     firstName:{ type:String, required:true, trim:true},
     lastName:{ type:String, required:true, trim:true},
     email:{type:String, required:true, trim:true, unique:true, match:[/^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i,'Email not valid']},
-    joinDate:{type:Date, required:true, trim:true},
+    joinDate:{type:String, required:true, trim:true},
     role:{type:String, enum:['admin','super_admin'], default:'admin'},
     password:{ type:String, required:true, select:false},
+    key:String,
     resetToken:String,
     resetTokenExp:Date,
     createdDate:{type:Date, default:Date.now}
