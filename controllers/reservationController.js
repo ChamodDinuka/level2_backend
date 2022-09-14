@@ -44,3 +44,17 @@ exports.deleteReservation = async (req, res, next) => {
         return res.status(400).json({ success: false })
     }
 }
+exports.getBlockedTime = async (req, res, next) => {
+    try {
+        let id = req.query.id
+        let date = req.query.date
+        let time =[]
+        const result = await reservation.find({stylist:id,date:date})
+        result.map((data)=>{
+            time.push(Number(data.time.split(":")[0]))
+        })
+        res.status(200).json(time)
+    } catch (error) {
+        res.status(400).json({ success: false })
+    }
+}
