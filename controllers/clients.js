@@ -24,11 +24,11 @@ exports.updateClient = async (req, res, next) => {
             runValidators: true
         })
         if (!result) {
-            return res.status(400).json({ success: false })
+            return res.status(400).json({ success: false, error:'Email is already exist' })
         }
         res.status(200).json({ success: true })
     } catch (error) {
-        return res.status(400).json({ success: false })
+        return res.status(400).json({ success: false, error:'Email is already exist' })
     }
 
 }
