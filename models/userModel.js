@@ -12,7 +12,8 @@ const userSchema = new mongoose.Schema({
     key:String,
     resetToken:String,
     resetTokenExp:Date,
-    createdDate:{type:Date, default:Date.now}
+    createdDate:{type:Date, default:Date.now},
+    count:{type:Number, default:0}
 })
 userSchema.pre('save',async function(next){
     const salt = await bcript.genSalt(10);

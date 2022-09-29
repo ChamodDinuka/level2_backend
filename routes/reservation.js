@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router();
 const {getType} =require('../controllers/typeController')
-const {getPie} = require('../controllers/pieController')
+const {getPie,getBar} = require('../controllers/pieController')
 const {getClients,addClient,updateClient,deleteClient} = require('../controllers/clients')
 const {getReservation,addReservation,updateReservation,deleteReservation,getBlockedTime} = require('../controllers/reservationController')
 
@@ -19,6 +19,7 @@ router.route('/types').get(getType)
 
 //get data for pie and bar chart
 router.route('/pie').get(getPie)
+router.route('/bar').get(getBar)
 
 // router.get('/clients/:id',(req,res)=>{
 //     res.status(200).json({status:"success"})
