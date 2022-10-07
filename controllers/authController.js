@@ -1,5 +1,6 @@
 const user = require('../models/userModel')
 const jwt = require('jsonwebtoken')
+const { use } = require('../routes/auth')
 
 exports.registerUser = async (req, res, next) => {
     try {
@@ -44,6 +45,28 @@ exports.getUser = async (req,res,next)=>{
         res.status(400).json({ success: false,error })
     }
 }
+exports.getCurrentUser = async (req,res,next)=>{
+    try {
+        const userList = await user.findById(req.params.id);
+        res.status(200).json(userList)
+    } catch (error) {
+        res.status(400).json({ success: false,error })
+    }
+}
+exports.resetPassword = async (req,res,next)=>{
+    try {
+        const userList = await user.findOne({ _id:req.params.id  });
+        if(userList){
+            userList.password = req.body.password
+            await userList.save()
+            res.status(200).json({ success: true })
+        }else{
+            res.status(400).json({ success: false })
+        }
+    } catch (error) {
+        res.status(400).json({ success: false,error })
+    }
+}
 exports.updateUser = async(req,res,next)=>{
     try {
         const result = await user.findByIdAndUpdate(req.params.id, req.body, {
@@ -55,7 +78,7 @@ exports.updateUser = async(req,res,next)=>{
         }
         res.status(200).json({ success: true })  
     } catch (error) {
-        return res.status(400).json({ success: false })
+        return res.status(400).json({ success: false,error:'Email is already exist'  })
     }
 }
 exports.deleteUser = async(req,res,next)=>{
@@ -67,5 +90,18 @@ exports.deleteUser = async(req,res,next)=>{
         res.status(200).json({ success: true })
     } catch (error) {
         return res.status(400).json({ success: false })
+    }
+}
+exports.checkUser = async (req,res,next)=>{
+    try {
+        const userList = await user.find(req.body);
+        if(userList.length > 0){
+            res.status(200).json(true)
+        }else{
+            res.status(200).json(false)
+        }
+        
+    } catch (error) {
+        res.status(400).json({ success: false,error })
     }
 }
