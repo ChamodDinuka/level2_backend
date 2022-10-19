@@ -1,6 +1,7 @@
 const user = require('../models/userModel')
 const jwt = require('jsonwebtoken')
 const { use } = require('../routes/auth')
+const ErrorResponse = require('../utils/errorResponse')
 
 exports.registerUser = async (req, res, next) => {
     try {
@@ -10,7 +11,8 @@ exports.registerUser = async (req, res, next) => {
         const token = result.getsignedJwtToken()
         res.status(200).json({ success: true, token })
     } catch (error) {
-        res.status(400).json({ success: false, error: 'Email is already existing' })
+        //res.status(400).json({ success: false, error: 'Email is already existing' })
+        next(new ErrorResponse('Email is already exist', 400))
     }
 }
 exports.loginUser = async (req, res, next) => {
@@ -39,10 +41,21 @@ exports.genToken = async(req,res,next)=>{
 }
 exports.getUser = async (req,res,next)=>{
     try {
-        const userList = await user.find();
+        let userList=[]
+        const page = parseInt(req.query.page, 10 || 1)
+        const limit = parseInt(req.query.limit, 10 || 100)
+        const skip = (page-1)*limit
+        //const userList = await user.find().skip(skip).limit(limit) 
+        if (req.query.sort) {
+            let sortQuery = req.query.sort.split(',').join(' ')
+            userList = await user.find().skip(skip).limit(limit).sort(sortQuery)
+        } else {
+            userList = await user.find().skip(skip).limit(limit)
+        }
         res.status(200).json(userList)
     } catch (error) {
-        res.status(400).json({ success: false,error })
+        next(new ErrorResponse())
+       // res.status(400).json({ success: false,error })
     }
 }
 exports.getCurrentUser = async (req,res,next)=>{
@@ -50,7 +63,8 @@ exports.getCurrentUser = async (req,res,next)=>{
         const userList = await user.findById(req.params.id);
         res.status(200).json(userList)
     } catch (error) {
-        res.status(400).json({ success: false,error })
+        // res.status(400).json({ success: false,error })
+        next(new ErrorResponse())
     }
 }
 exports.resetPassword = async (req,res,next)=>{
@@ -61,10 +75,12 @@ exports.resetPassword = async (req,res,next)=>{
             await userList.save()
             res.status(200).json({ success: true })
         }else{
-            res.status(400).json({ success: false })
+            //res.status(400).json({ success: false })
+            throw new Error()
         }
     } catch (error) {
-        res.status(400).json({ success: false,error })
+        next(new ErrorResponse(error.message || 'User could not found', 400))
+        //res.status(400).json({ success: false,error })
     }
 }
 exports.updateUser = async(req,res,next)=>{
@@ -74,22 +90,26 @@ exports.updateUser = async(req,res,next)=>{
             runValidators: true
         })
         if (!result) {
-            return res.status(400).json({ success: false })
+            //return res.status(400).json({ success: false })
+            throw new Error();
         }
         res.status(200).json({ success: true })  
     } catch (error) {
-        return res.status(400).json({ success: false,error:'Email is already exist'  })
+       // return res.status(400).json({ success: false,error:'Email is already exist'  })
+       next(new ErrorResponse('Email is already exist', 400))
     }
 }
 exports.deleteUser = async(req,res,next)=>{
     try {
         const result = await user.findByIdAndDelete(req.params.id)
         if (!result) {
-            return res.status(400).json({ success: false })
+            throw new Error()
+            //return res.status(400).json({ success: false })
         }
         res.status(200).json({ success: true })
     } catch (error) {
-        return res.status(400).json({ success: false })
+        //return res.status(400).json({ success: false })
+        next(new ErrorResponse(error.message || 'There is no matching record to delete', 400))
     }
 }
 exports.checkUser = async (req,res,next)=>{
@@ -102,6 +122,7 @@ exports.checkUser = async (req,res,next)=>{
         }
         
     } catch (error) {
-        res.status(400).json({ success: false,error })
+        next(new ErrorResponse())
+        //res.status(400).json({ success: false,error })
     }
 }

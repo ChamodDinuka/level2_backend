@@ -1,11 +1,21 @@
 const client = require('../models/clientModel')
+const ErrorResponse = require('../utils/errorResponse')
 
 exports.getClients = async (req, res, next) => {
     try {
-        const result = await client.find()
+        let result=[]
+        const page = parseInt(req.query.page, 10 || 1)
+        const limit = parseInt(req.query.limit, 10 || 100)
+        const skip = (page - 1) * limit
+        if (req.query.sort) {
+            let sortQuery = req.query.sort.split(',').join(' ')
+            result = await client.find().skip(skip).limit(limit).sort(sortQuery)
+        } else {
+            result = await client.find().skip(skip).limit(limit)
+        }
         res.status(200).json(result)
     } catch (error) {
-        res.status(400).json({ success: false })
+        next(new ErrorResponse())
     }
 }
 exports.addClient = async (req, res, next) => {
@@ -13,7 +23,7 @@ exports.addClient = async (req, res, next) => {
         const result = await client.create(req.body)
         res.status(200).json({ success: true })
     } catch (error) {
-        res.status(400).json({ success: false, error:'Email is already exist' })
+        next(new ErrorResponse('Email is already exist', 400))
     }
 
 }
@@ -24,11 +34,11 @@ exports.updateClient = async (req, res, next) => {
             runValidators: true
         })
         if (!result) {
-            return res.status(400).json({ success: false, error:'Email is already exist' })
+            throw new Error("Client not found")
         }
         res.status(200).json({ success: true })
     } catch (error) {
-        return res.status(400).json({ success: false, error:'Email is already exist' })
+        next(new ErrorResponse(error.message, 400))
     }
 
 }
@@ -36,10 +46,10 @@ exports.deleteClient = async (req, res, next) => {
     try {
         const result = await client.findByIdAndDelete(req.params.id)
         if (!result) {
-            return res.status(400).json({ success: false })
+            throw new Error("Client not found")
         }
         res.status(200).json({ success: true })
     } catch (error) {
-        return res.status(400).json({ success: false })
+        next(new ErrorResponse(error.message, 400))
     }
 }

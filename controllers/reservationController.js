@@ -1,13 +1,24 @@
 const reservation = require('../models/reservationModel')
 const user = require('../models/userModel')
 const moment = require('moment')
+const ErrorResponse = require('../utils/errorResponse')
 
 exports.getReservation = async (req, res, next) => {
     try {
-        const result = await reservation.find()
+        let result=[]
+        const page = parseInt(req.query.page, 10 || 1)
+        const limit = parseInt(req.query.limit, 10 || 100)
+        const skip = (page-1)*limit
+        //const result = await reservation.find().skip(skip).limit(limit)
+        if (req.query.sort) {
+            let sortQuery = req.query.sort.split(',').join(' ')
+            result = await reservation.find().skip(skip).limit(limit).sort(sortQuery)
+        } else {
+            result = await reservation.find().skip(skip).limit(limit)
+        }
         res.status(200).json(result)
     } catch (error) {
-        res.status(400).json({ success: false })
+        next(new ErrorResponse())
     }
 }
 exports.addReservation = async (req, res, next) => {
@@ -21,7 +32,7 @@ exports.addReservation = async (req, res, next) => {
         })
         res.status(200).json({ success: true })
     } catch (error) {
-        res.status(400).json({ success: false })
+        next(new ErrorResponse(error.message, 400))
     }
 
 }
@@ -33,14 +44,15 @@ exports.updateReservation = async (req, res, next) => {
                 runValidators: true
             })
             if (!result) {
-                return res.status(400).json({ success: false })
+                //return res.status(400).json({ success: false })
+                throw new Error()
             }
             res.status(200).json({ success: true })
         } catch (error) {
-            return res.status(400).json({ success: false })
+            next(error)
         }
     }else{
-        return res.status(400).json({ success: false,error:'Cannot schedule to past dates' })
+        next(new ErrorResponse('Cannot schedule to past dates', 400))
     }
     
 
@@ -61,11 +73,13 @@ exports.deleteReservation = async (req, res, next) => {
         })
         const result = await reservation.findByIdAndDelete(req.params.id)
         if (!result) {
-            return res.status(400).json({ success: false })
+            //return res.status(400).json({ success: false })
+            throw new Error()
         }
         res.status(200).json({ success: true })
     } catch (error) {
-        return res.status(400).json({ success: false })
+        //return res.status(400).json({ success: false })
+        next(new ErrorResponse(error.message || 'Reservation is not found', 400))
     }
 }
 exports.getBlockedTime = async (req, res, next) => {
@@ -83,6 +97,6 @@ exports.getBlockedTime = async (req, res, next) => {
         })
         res.status(200).json(time)
     } catch (error) {
-        res.status(400).json({ success: false })
+        next(new ErrorResponse())
     }
 }
